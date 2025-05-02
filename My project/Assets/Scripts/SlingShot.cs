@@ -2,79 +2,82 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlingShot : MonoBehaviour
+public class Slingshot : MonoBehaviour
 {
-    public static SlingShot Instance { get; private set; }
-    private LineRenderer leftLineRenderer;
-    private LineRenderer rightLineRenderer;
-    private Transform leftpoint;
-    private Transform rightpoint;
-    private Transform centerpoint;
-    
-    private bool isDrawing=false;
-    private Transform birdTransform;
+    public static Slingshot Instance { get; private set; }
+    private LineRenderer leftLineRenderer;
+    private LineRenderer rightLineRenderer;
 
-    private void Awake()
-    {
-        Instance = this;
+    private Transform leftPoint;
+    private Transform rightPoint;
+    private Transform centerPoint;
+    private Transform birdTransform;
 
-        leftLineRenderer = transform.Find("LeftLineRenderer").GetComponent<LineRenderer>();
-        rightLineRenderer = transform.Find("RightLineRenderer").GetComponent<LineRenderer>();
-        leftpoint = transform.Find("LeftPoint");
-        rightpoint = transform.Find("RightPoint");
-        centerpoint = transform.Find("CenterPoint");
-    }
+    private void Awake()
+    {
+        Instance = this;
+        leftLineRenderer = transform.Find("LeftLineRenderer").GetComponent<LineRenderer>();
+        rightLineRenderer = transform.Find("RightLineRenderer").GetComponent<LineRenderer>();
 
-    // Start is called before the first frame update
-    void Start()
-    {
-         
-        HideLine();
-    }
+        leftPoint = transform.Find("LeftPoint");
+        rightPoint = transform.Find("RightPoint");
+        centerPoint = transform.Find("CenterPoint");
+    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (isDrawing)
-        {
-            Draw();
-        }
-    }
-    public void StartDraw(Transform birdTransform)
-    {
-        isDrawing=true;
-        this.birdTransform=birdTransform;
-        ShowLine();
-    }
-    public void EndDraw()
-    {
-        isDrawing=false;
-        HideLine();
-    }
-    public void Draw()
-    {
-        Vector3 birdPosition = birdTransform.position;
-        birdPosition = (birdPosition - centerpoint.position).normalized * 0.25f + birdPosition;
+    private bool isDrawing = false;
+    // Start is called before the first frame update
+    void Start()
+    {
+        HideLine();
+    }
 
-        leftLineRenderer.SetPosition(0, birdPosition);
-        leftLineRenderer.SetPosition(1, leftpoint.position);
-        
-        rightLineRenderer.SetPosition(0, birdPosition);
-        rightLineRenderer.SetPosition(1, rightpoint.position);
+    // Update is called once per frame
+    void Update()
+    {
+        if (isDrawing)
+        {
+            Draw();
+        }
+    }
 
-    }
-    public Vector3 getCenterPosition()
-    {
-        return centerpoint.transform.position;
-    }
-    private void HideLine()
-    {
-        rightLineRenderer.enabled = false;
-        leftLineRenderer.enabled=false;
-       }
-    private void ShowLine()
-    {
-        leftLineRenderer.enabled = true;
-        rightLineRenderer.enabled=true;
-    }
-}
+    public void StartDraw(Transform birdTransform)
+    {
+        isDrawing = true;
+        this.birdTransform = birdTransform;
+        ShowLine();
+    }
+    public void EndDraw()
+    {
+        isDrawing = false;
+        HideLine();
+        birdTransform = null; // 重置小鸟引用
+    }
+    public void Draw()
+    {
+        Vector3 birdPosition = birdTransform.position;
+
+        birdPosition = (birdPosition - centerPoint.position).normalized * 0.4f + birdPosition;
+        leftLineRenderer.SetPosition(0, birdPosition);
+        leftLineRenderer.SetPosition(1, leftPoint.position);
+
+        rightLineRenderer.SetPosition(0, birdPosition);
+        rightLineRenderer.SetPosition(1, rightPoint.position);
+    }
+
+    public Vector3 getCenterPosition()
+    {
+        return centerPoint.transform.position;
+    }
+
+    private void HideLine()
+    {
+        rightLineRenderer.enabled = false;
+        leftLineRenderer.enabled = false;
+    }
+
+    private void ShowLine()
+    {
+        rightLineRenderer.enabled = true;
+        leftLineRenderer.enabled = true;
+    }
+}    
