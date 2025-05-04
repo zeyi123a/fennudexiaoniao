@@ -110,12 +110,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BLOCKS_1_0
+      name: BigHand
       rect:
         serializedVersion: 2
         x: 0
         y: 812
-        width: 346
+        width: 90
         height: 197
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -4026,7 +4026,6 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      BLOCKS_1_0: -1423872087
       BLOCKS_1_1: -596738518
       BLOCKS_1_100: -1827113689
       BLOCKS_1_104: 204472185
@@ -4181,6 +4180,7 @@ TextureImporter:
       BLOCKS_1_97: 1367879066
       BLOCKS_1_98: -1015749215
       BLOCKS_1_99: -350982825
+      BigHand: -1423872087
       BigIce_1: -1749242474
       BigIce_2: -1699196894
       BigIce_3: 876358158

@@ -4,55 +4,31 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static GameManager Instance {  get; private set; }
+    //����С����б�
+    private Bird[] birdList;
+    private int index = -1;
 
-    public Bird singleBird;
+    private void Awake()
+    {
+        Instance = this;
+    }
 
-    private int pigDeadCount;
-    private int pigTotalCount;
+    void Start()
+    {
+        birdList = FindObjectsByType<Bird>(FindObjectsSortMode.None);
 
-    private FollowTarget CameraFollowTarget;
+        LoadNextBird();
+    }
 
-    private void Awake()
-    {
-        Instance = this;
-        pigDeadCount = 0;
-    }
+    // Update is called once per frame
+    void Update()
+    {
+    }
+    public void LoadNextBird()
+    {
+        index++;
+        birdList[index].GoStage(SlingShot.Instance.getCenterPosition());
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        singleBird = FindFirstObjectByType<Bird>();
-        pigTotalCount = FindObjectsByType<Pig>(FindObjectsSortMode.None).Length;
-        CameraFollowTarget = Camera.main.GetComponent<FollowTarget>();
-
-        if (singleBird != null)
-        {
-            singleBird.GoStage(Slingshot.Instance.getCenterPosition());
-            CameraFollowTarget.SetTarget(singleBird.transform);
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (singleBird != null && singleBird.lives <= 0)
-        {
-            GameEnd();
-        }
-    }
-
-    public void OnPigDead()
-    {
-        pigDeadCount++;
-        if (pigDeadCount >= pigTotalCount)
-        {
-            GameEnd();
-        }
-    }
-
-    public void GameEnd()
-    {
-        print("Game End!");
-    }
-}    
+    }
+}

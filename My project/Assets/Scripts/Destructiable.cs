@@ -17,6 +17,7 @@ public class Destructiable : MonoBehaviour
     //±¬Õ¨ÌØÐ§
     private GameObject boomPrefab;
 
+
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -28,7 +29,7 @@ public class Destructiable : MonoBehaviour
     {
         currentHP -= (int)(collision.relativeVelocity.magnitude * 8);
 
-        if(currentHP <= 0)
+        if(currentHP <= 0|| collision.gameObject.tag.Contains("BigHand"))
         {
             Dead();
         }
