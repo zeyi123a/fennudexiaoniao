@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
         }
 
         if(singleBird != null && singleBird.lives == 1){
-            riggleHelper();
+            TriggleHelper();
         }
     }
 
