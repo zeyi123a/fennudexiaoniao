@@ -12,6 +12,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip[] pigCollisions;
     public AudioClip woodCollision;
     public AudioClip woodDestroyed;
+    public AudioClip skillPickUp;
 
     private void Awake(){
         Instance = this;
@@ -41,5 +42,9 @@ public class AudioManager : MonoBehaviour
 
     public void PlayWoodDestroyed(Vector3 position){
         AudioSource.PlayClipAtPoint(woodDestroyed,position,.2f);
+    }
+
+    public void PlaySkillPickUp(Vector3 position){
+        AudioSource.PlayClipAtPoint(skillPickUp,position,1.5f);
     }
 }

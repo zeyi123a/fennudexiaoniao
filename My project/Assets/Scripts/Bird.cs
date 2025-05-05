@@ -1,135 +1,182 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public enum BirdState
-{
-    Waiting,
-    BeforeShoot,
-    AfterShoot,
-    WaitToDie
+public enum BirdState  {
+    waiting,
+    beforeShoot,
+    afterShoot,
+    waitToDie
 }
+
 public class Bird : MonoBehaviour
 {
-    
+    public BirdState state = BirdState.beforeShoot;
 
-    public  BirdState state= BirdState.BeforeShoot;
-    //µÈ´ý  ·¢ÉäÇ° ·¢Éäºó
-    public bool isMouseDown = false;
+    private bool isMouseDown = false;
+    public float maxDistance = 2.45f;
 
-    //×î´óÍÏ×§¾àÀë
-    public float maxDistance = 2.4f;
+    public float flySpeed = 13;
+    protected Rigidbody2D rgd;
+    public bool isFlying = true;
+    public bool isHaveUsedSkill = false;
+    public int lives = 2;
 
-    //·ÉÏèËÙ¶È
-    public float flySpeed = 4;
-    private Rigidbody2D rgd;
-
-    private GameObject boomPrefab;
+    private TrailRenderer trailRenderer;
 
     // Start is called before the first frame update
     void Start()
     {
-        boomPrefab = Resources.Load<GameObject>("Boom_1");
+        Debug.Log("I am alive!");
         rgd = GetComponent<Rigidbody2D>();
-        rgd.bodyType = RigidbodyType2D.Static;
+        trailRenderer = GetComponent<TrailRenderer>();
+        if (trailRenderer != null)
+        {
+            trailRenderer.enabled = false; 
+        }
+        
     }
 
     // Update is called once per frame
-    void Update()
+    void Update() 
     {
-     
-        switch (state)
-        {
-            case BirdState.Waiting:
+        switch(state){
+            case BirdState.waiting:
                 break;
-            case BirdState.BeforeShoot:
+            case BirdState.beforeShoot:
                 MoveControll();
                 break;
-            case BirdState.AfterShoot:
-                StopControl();
+            case BirdState.afterShoot:
+                StopControll();
+                SkillControll();
                 break;
-            case BirdState.WaitToDie:
+            case BirdState.waitToDie:
                 break;
             default:
                 break;
         }
     }
-    //onMousedown //onMouseup
-    private void OnMouseDown()
-    {
-        if (state == BirdState.BeforeShoot)
-        {
+
+    private void OnMouseDown(){
+        if(state == BirdState.beforeShoot && EventSystem.current.IsPointerOverGameObject() == false){
             isMouseDown = true;
-            SlingShot.Instance.StartDraw(transform);
+            Slingshot.Instance.StartDraw(transform);
+            AudioManager.Instance.PlayBirdSelect(transform.position);
         }
     }
-    private void OnMouseUp()
-    {
-        if (state == BirdState.BeforeShoot)
-        {
+
+    private void OnMouseUp(){
+        if(state == BirdState.beforeShoot && EventSystem.current.IsPointerOverGameObject() == false){
             isMouseDown = false;
-            SlingShot.Instance.EndDraw();
+            Slingshot.Instance.EndDraw();
             Fly();
         }
     }
-    private void MoveControll()
-    {
-        if (isMouseDown)
-        {
-            transform.position = GetMousePosition();
+
+    private void MoveControll(){
+        if(isMouseDown){
+            transform.position = GetMounsePosition();
         }
     }
-    private Vector3 GetMousePosition()
-    {
-       Vector3 mp= Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 centerPosition = SlingShot.Instance.getCenterPosition();
+
+    private Vector3 GetMounsePosition(){
+        Vector3 mp =  Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mp.z = 0;
 
-       Vector3 mouseDir= mp-centerPosition ;
+        Vector3 centerPosition = Slingshot.Instance.getCenterPosition(); 
+        Vector3 mouseDir = mp - centerPosition; 
         float distance = mouseDir.magnitude;
-        if(distance > maxDistance)
-        {
+        if(distance > maxDistance){
             mp = mouseDir.normalized * maxDistance + centerPosition;
         }
-        
         return mp;
-
-    }
-    private void Fly()
-    {
-        rgd.bodyType=RigidbodyType2D.Dynamic;
-
-        rgd.velocity = (SlingShot.Instance.getCenterPosition() - transform.position) * flySpeed;
-        state=BirdState.AfterShoot;
     }
 
-    public void GoStage( Vector3 position)
-    {
-        state = BirdState.BeforeShoot;
+    private void Fly(){
+        rgd.bodyType = RigidbodyType2D.Dynamic;
+
+        rgd.velocity = (Slingshot.Instance.getCenterPosition() - transform.position).normalized * flySpeed;
+
+        state = BirdState.afterShoot;
+
+        if (trailRenderer != null)
+        {
+            trailRenderer.enabled = true; 
+        }
+
+        AudioManager.Instance.PlayBirdFlying(transform.position);
+    }
+
+    public void GoStage(Vector3 position){
+        state = BirdState.beforeShoot;
         transform.position = position;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag.Contains("Ground"))
-        {
-            Invoke("BackToSling", 0.1f);
-            GameObject.Instantiate(boomPrefab, transform.position, Quaternion.identity);
+    private void StopControll(){
+        if(rgd.velocity.magnitude < 0.1f){
+            state = BirdState.waitToDie;
+            Invoke("HandleDeath",1f);
+        }
+        
+    }
+
+    private void HandleDeath(){
+        lives--;
+        if(lives > 0){
+            state = BirdState.beforeShoot;
+            transform.position = Slingshot.Instance.getCenterPosition();
+            rgd.velocity = Vector2.zero;
+            rgd.bodyType = RigidbodyType2D.Static;
+            transform.rotation = Quaternion.identity;
+            if(trailRenderer != null){
+                trailRenderer.enabled = false;
+            }
+            Slingshot.Instance.EndDraw();
+        }else{
+            Destroy(gameObject);
+            GameObject.Instantiate(Resources.Load("Boom1"),transform.position,Quaternion.identity);
+            GameManager.Instance.GameEnd();
         }
     }
 
-    private void BackToSling()
-    {
-        transform.position = SlingShot.Instance.getCenterPosition();
-        rgd.bodyType = RigidbodyType2D.Static;
-        state = BirdState.BeforeShoot;
+    private void SkillControll(){
+        if(isHaveUsedSkill)return;
+        if(isFlying == true && Input.GetMouseButtonDown(0)){
+            isHaveUsedSkill = true;
+            FlyingSkill();
+        }
+
+        if(Input.GetMouseButtonDown(0)){
+            isHaveUsedSkill = true;
+            FullTimeSkill();
+        }
     }
-    private void StopControl()
-    {
-        if (rgd.velocity.magnitude < 0.1f)
+
+    protected virtual void FlyingSkill(){
+        
+    }
+
+    protected virtual void FullTimeSkill(){
+
+    }
+
+    //ä»¥ä¸‹ä¸ºäº†ä¿è¯å…¶ä»–ä»£ç ä¸æŠ¥é”™ï¼Œæ­£å¼æ¸¸æˆé€»è¾‘ä¸­æ²¡æœ‰
+    protected void LoadNextBird(){
+        if (trailRenderer != null)
         {
-         state=BirdState.WaitToDie;
-            Invoke("BackToSling", 1f);
+            trailRenderer.enabled = false;
+            trailRenderer = null;
+        }
+        Destroy(gameObject);
+        GameObject.Instantiate(Resources.Load("Boom1"),transform.position,Quaternion.identity);
+        GameManager.Instance.LoadNextBird();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision){
+        if(state == BirdState.afterShoot)isFlying = false;
+        if(state == BirdState.afterShoot && collision.relativeVelocity.magnitude > 5){
+            AudioManager.Instance.PlayBirdCollision(transform.position);
         }
     }
 }
